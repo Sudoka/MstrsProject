@@ -125,6 +125,8 @@
  * The current exported interfaces for gathering environmental noise
  * from the devices are:
  *
+ *     DACCHANGE - difference here 
+ *
  * 	void add_input_randomness(unsigned int type, unsigned int code,
  *                                unsigned int value);
  * 	void add_interrupt_randomness(int irq);
@@ -328,6 +330,22 @@ static struct poolinfo {
 #define POOLBITS	poolwords*32
 #define POOLBYTES	poolwords*4
 
+// dacashman: change here
+static int rand_read_count = 0;
+static int urand_change_count = 0;
+
+
+
+
+// jhalderm: /////////////////////////////
+static int nb_stir_count = 0;
+static int nb_reentry_count = 0;
+static int nb_input_bytes = 0;
+static int nb_entry_count = 0;
+static spinlock_t nb_lock = __SPIN_LOCK_UNLOCKED(&nb_lock);
+
+//////////////////////////////////////////
+
 /*
  * For the purposes of better mixing, we use the CRC-32 polynomial as
  * well to make a twisted Generalized Feedback Shift Reigster
@@ -378,16 +396,17 @@ static DECLARE_WAIT_QUEUE_HEAD(random_read_wait);
 static DECLARE_WAIT_QUEUE_HEAD(random_write_wait);
 static struct fasync_struct *fasync;
 
-#if 0
+#if 1  /* dcashman change - temporarily disabling random debugging */
 static int debug;
 module_param(debug, bool, 0644);
 #define DEBUG_ENT(fmt, arg...) do { \
-	if (debug) \
-		printk(KERN_DEBUG "random %04d %04d %04d: " \
+		printk(KERN_DEBUG "random %04d %04d %04d %08x %08x: " \
 		fmt,\
 		input_pool.entropy_count,\
 		blocking_pool.entropy_count,\
 		nonblocking_pool.entropy_count,\
+		nonblocking_pool_data[0],\
+		nonblocking_pool_data[1],\
 		## arg); } while (0)
 #else
 #define DEBUG_ENT(fmt, arg...) do {} while (0)
@@ -415,6 +434,9 @@ struct entropy_store {
 	int entropy_count;
 	int input_rotate;
 	__u8 *last_data;
+
+//jhalderm
+ktime_t init_now;
 };
 
 static __u32 input_pool_data[INPUT_POOL_WORDS];
@@ -445,6 +467,47 @@ static struct entropy_store nonblocking_pool = {
 	.lock = __SPIN_LOCK_UNLOCKED(&nonblocking_pool.lock),
 	.pool = nonblocking_pool_data
 };
+
+
+/* dacashman func:
+ * function that somehow combines all elements in pool and
+ * outputs a signature.  
+ *
+ * Ideally, this would be a hash of the pool elements, but 
+ * for speed we are currently just adding them.  XOR would 
+ * be even faster, but would tell us less.
+ */
+static inline int get_pool_signature(struct entropy_store *r){
+  int i, num_bytes, pool_sig;
+  char *pool_data;
+
+  num_bytes = r->poolinfo->POOLBYTES;
+  pool_sig = 0;
+  pool_data = (char *) r->pool;
+  //just add all bytes
+  for(i = 0; i < num_bytes; i ++){
+    pool_sig += pool_data[i];
+  }
+  return pool_sig;
+}
+
+/* dacashman func:
+ * function that mimics get_pool_signature() with buffers
+ *
+ */
+static inline int get_buf_signature(void *buf, int num_bytes){
+  int i, pool_sig;
+  char *buf_data;
+
+  pool_sig = 0;
+  buf_data = (char *) buf;
+  //just add all bytes
+  for(i = 0; i < num_bytes; i ++){
+    pool_sig += buf_data[i];
+  }
+  return pool_sig;
+}
+
 
 /*
  * This function adds bytes into the entropy "pool".  It does not
@@ -479,6 +542,16 @@ static void mix_pool_bytes_extract(struct entropy_store *r, const void *in,
 	spin_lock_irqsave(&r->lock, flags);
 	input_rotate = r->input_rotate;
 	i = r->add_ptr;
+
+// jhalderm
+	if (nbytes && (r == &nonblocking_pool)){
+	  nb_stir_count+=nbytes;
+	  /* dacashman change */
+	  /*	  int pool_sig;
+	  pool_sig = get_pool_signature(&nonblocking_pool);
+	  DEBUG_ENT("urand_change_num %d mix_pool_bytes(%d): sig %08x %08x %08x", ++urand_change_count, nbytes, pool_sig,
+	  nonblocking_pool_data[0], nonblocking_pool_data[1]); //ewust */
+    } 
 
 	/* mix one byte at a time to simplify size handling and churn faster */
 	while (nbytes--) {
@@ -517,7 +590,20 @@ static void mix_pool_bytes_extract(struct entropy_store *r, const void *in,
 
 static void mix_pool_bytes(struct entropy_store *r, const void *in, int bytes)
 {
+// jhalderm2:
+unsigned long flags;
+spin_lock_irqsave(&nb_lock, flags);
+nb_entry_count++;
+spin_unlock_irqrestore(&nb_lock, flags);
+
        mix_pool_bytes_extract(r, in, bytes, NULL);
+
+// jhalderm2:
+spin_lock_irqsave(&nb_lock, flags);
+nb_entry_count--;
+if (nb_entry_count > 0)
+  nb_reentry_count++;
+spin_unlock_irqrestore(&nb_lock, flags);
 }
 
 /*
@@ -622,6 +708,8 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned num)
 	} sample;
 	long delta, delta2, delta3;
 
+
+
 	preempt_disable();
 	/* if over the trickle threshold, use only 1 in 4096 samples */
 	if (input_pool.entropy_count > trickle_thresh &&
@@ -632,6 +720,7 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned num)
 	sample.cycles = get_cycles();
 	sample.num = num;
 	mix_pool_bytes(&input_pool, &sample, sizeof(sample));
+	DEBUG_ENT("add_timer_randomness(.. %u) with jiffies: %llu, cycles: %lld\n", num);
 
 	/*
 	 * Calculate number of bits of randomness we probably added.
@@ -681,7 +770,7 @@ void add_input_randomness(unsigned int type, unsigned int code,
 	if (value == last_value)
 		return;
 
-	DEBUG_ENT("input event\n");
+	DEBUG_ENT("add_input_randomness(%d, %d, %d)\n", type, code, value);
 	last_value = value;
 	add_timer_randomness(&input_timer_state,
 			     (type << 4) ^ code ^ (code >> 4) ^ value);
@@ -697,18 +786,25 @@ void add_interrupt_randomness(int irq)
 	if (state == NULL)
 		return;
 
-	DEBUG_ENT("irq event %d\n", irq);
+	DEBUG_ENT("add_interrupt_randomness(%d)\n", irq);
 	add_timer_randomness(state, 0x100 + irq);
 }
 
 #ifdef CONFIG_BLOCK
 void add_disk_randomness(struct gendisk *disk)
 {
+  /* dacashman - removing this to simulate SD/SSD */
+        if(1)
+	  return;
+
+
 	if (!disk || !disk->random)
 		return;
+
 	/* first major is 1, so we get >= 0x200 here */
-	DEBUG_ENT("disk event %d:%d\n",
-		  MAJOR(disk_devt(disk)), MINOR(disk_devt(disk)));
+	DEBUG_ENT("add_disk_randomness(%d:%d) %08x %08x\n", 
+		MAJOR(disk_devt(disk)), MINOR(disk_devt(disk)), 
+		nonblocking_pool_data[0], nonblocking_pool_data[1]);
 
 	add_timer_randomness(disk->random, 0x100 + disk_devt(disk));
 }
@@ -734,16 +830,18 @@ static void xfer_secondary_pool(struct entropy_store *r, size_t nbytes)
 {
 	__u32 tmp[OUTPUT_POOL_WORDS];
 
+//  return; //ewust
+
 	if (r->pull && r->entropy_count < nbytes * 8 &&
 	    r->entropy_count < r->poolinfo->POOLBITS) {
 		/* If we're limited, always leave two wakeup worth's BITS */
-		int rsvd = r->limit ? 0 : random_read_wakeup_thresh/4;
+	        int rsvd = r->limit ? 0 : random_read_wakeup_thresh/4; // jah: seems to be opposite of above comment!  bug?
 		int bytes = nbytes;
 
 		/* pull at least as many as BYTES as wakeup BITS */
-		bytes = max_t(int, bytes, random_read_wakeup_thresh / 8);
+		bytes = max_t(int, bytes, random_read_wakeup_thresh / 8); // 64/8 jah
 		/* but never more than the buffer size */
-		bytes = min_t(int, bytes, sizeof(tmp));
+		bytes = min_t(int, bytes, sizeof(tmp));  // 32 jah
 
 		DEBUG_ENT("going to reseed %s with %d bits "
 			  "(%d of %d requested)\n",
@@ -751,6 +849,19 @@ static void xfer_secondary_pool(struct entropy_store *r, size_t nbytes)
 
 		bytes = extract_entropy(r->pull, tmp, bytes,
 					random_read_wakeup_thresh / 8, rsvd);
+// jhalderm
+unsigned long flags;
+ spin_lock_irqsave(&nb_lock, flags);
+ if (r == &nonblocking_pool){
+  nb_input_bytes += bytes; //jhalderm
+  /*dacashman change */
+          int pool_sig, data_sig;
+	  pool_sig = get_pool_signature(&nonblocking_pool);
+	  data_sig = get_buf_signature(tmp, bytes);
+	  DEBUG_ENT("urand_change_num %d xfer_secondary_pool(%d): pool_sig %08x, data_sig %08x, bytes_mixed %d %08x %08x", ++urand_change_count, nbytes, pool_sig, data_sig, bytes, nonblocking_pool_data[0], nonblocking_pool_data[1]); //ewust 
+ }
+spin_unlock_irqrestore(&nb_lock, flags);
+
 		mix_pool_bytes(r, tmp, bytes);
 		credit_entropy_bits(r, bytes*8);
 	}
@@ -813,8 +924,17 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
 	__u32 hash[5], workspace[SHA_WORKSPACE_WORDS];
 	__u8 extract[64];
 
+//	DEBUG_ENT("extract_buf\n");
+
 	/* Generate a hash across the pool, 16 words (512 bits) at a time */
 	sha_init(hash);
+
+// jhalderm2:
+unsigned long flags;
+spin_lock_irqsave(&nb_lock, flags);
+nb_entry_count++;
+spin_unlock_irqrestore(&nb_lock, flags);
+
 	for (i = 0; i < r->poolinfo->poolwords; i += 16)
 		sha_transform(hash, (__u8 *)(r->pool + i), workspace);
 
@@ -827,7 +947,27 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
 	 * brute-forcing the feedback as hard as brute-forcing the
 	 * hash.
 	 */
+
+
+	/* dacashman change */
+	spin_lock_irqsave(&nb_lock, flags);
+	if (r == &nonblocking_pool){
+	  /*dacashman change */
+	  int pool_sig, data_sig;
+	  pool_sig = get_pool_signature(&nonblocking_pool);
+	  data_sig = get_buf_signature(hash, sizeof(hash));
+	  DEBUG_ENT("urand_change_num %d extract_buf: pool_sig %08x, data_sig %08x, bytes_mixed %d %08x %08x", ++urand_change_count, pool_sig, data_sig, sizeof(hash), nonblocking_pool_data[0], nonblocking_pool_data[1]); //ewust 
+	}
+	spin_unlock_irqrestore(&nb_lock, flags);
+
 	mix_pool_bytes_extract(r, hash, sizeof(hash), extract);
+
+// jhalderm2:
+spin_lock_irqsave(&nb_lock, flags);
+nb_entry_count--;
+if (nb_entry_count > 0)
+  nb_reentry_count++;
+spin_unlock_irqrestore(&nb_lock, flags);
 
 	/*
 	 * To avoid duplicates, we atomically extract a portion of the
@@ -847,6 +987,8 @@ static void extract_buf(struct entropy_store *r, __u8 *out)
 	hash[2] ^= rol32(hash[2], 16);
 	memcpy(out, hash, EXTRACT_SIZE);
 	memset(hash, 0, sizeof(hash));
+
+//	DEBUG_ENT("extract_buf done\n");
 }
 
 static ssize_t extract_entropy(struct entropy_store *r, void *buf,
@@ -856,8 +998,12 @@ static ssize_t extract_entropy(struct entropy_store *r, void *buf,
 	__u8 tmp[EXTRACT_SIZE];
 	unsigned long flags;
 
+	DEBUG_ENT("extract_entropy(.. %d ..)\n", nbytes);	
+
 	xfer_secondary_pool(r, nbytes);
 	nbytes = account(r, nbytes, min, reserved);
+
+	DEBUG_ENT("extract_entropy account returned: %d \n", nbytes);	
 
 	while (nbytes) {
 		extract_buf(r, tmp);
@@ -888,8 +1034,10 @@ static ssize_t extract_entropy_user(struct entropy_store *r, void __user *buf,
 	ssize_t ret = 0, i;
 	__u8 tmp[EXTRACT_SIZE];
 
+	DEBUG_ENT("extract_entropy_user(%d)", nbytes);
 	xfer_secondary_pool(r, nbytes);
 	nbytes = account(r, nbytes, 0, 0);
+	DEBUG_ENT("  got %d bytes\n", nbytes);
 
 	while (nbytes) {
 		if (need_resched()) {
@@ -901,7 +1049,7 @@ static ssize_t extract_entropy_user(struct entropy_store *r, void __user *buf,
 			schedule();
 		}
 
-		extract_buf(r, tmp);
+		extract_buf(r, tmp);		
 		i = min_t(int, nbytes, EXTRACT_SIZE);
 		if (copy_to_user(buf, tmp, i)) {
 			ret = -EFAULT;
@@ -926,6 +1074,14 @@ static ssize_t extract_entropy_user(struct entropy_store *r, void __user *buf,
  */
 void get_random_bytes(void *buf, int nbytes)
 {
+  int pool_sig;
+  pool_sig = get_pool_signature(&nonblocking_pool);
+  //printk("rand_read_num %d get_random_bytes(%d): urandom sig - %d\n", ++rand_read_count, nbytes, pool_sig);
+  DEBUG_ENT("rand_read_num %d get_random_bytes(%d): sig %08x %08x %08x", ++rand_read_count, nbytes, pool_sig,
+    nonblocking_pool_data[0], nonblocking_pool_data[1]); //ewust
+  /*  if(rand_read_count > 150 && nbytes != 16){
+    dump_stack();
+    } */
 	extract_entropy(&nonblocking_pool, buf, nbytes, 0, 0);
 }
 EXPORT_SYMBOL(get_random_bytes);
@@ -949,8 +1105,12 @@ static void init_std_data(struct entropy_store *r)
 	spin_unlock_irqrestore(&r->lock, flags);
 
 	now = ktime_get_real();
-	mix_pool_bytes(r, &now, sizeof(now));
-	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
+// jhalderm: save initial now value
+r->init_now = now;
+// ewust: testing removing time from entropy seeding:
+//mix_pool_bytes(r, &now, sizeof(now));
+// jhalderm: easier to compare boots if we don't keep this:
+//mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
 	/* Enable continuous test in fips mode */
 	if (fips_enabled)
 		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
@@ -958,9 +1118,14 @@ static void init_std_data(struct entropy_store *r)
 
 static int rand_initialize(void)
 {
+//ewust: we DO clear the entropy pool:
+  DEBUG_ENT("initializing\n");
 	init_std_data(&input_pool);
 	init_std_data(&blocking_pool);
 	init_std_data(&nonblocking_pool);
+memset(input_pool_data, 0, INPUT_POOL_WORDS * sizeof(__u32)); 
+memset(blocking_pool_data, 0, OUTPUT_POOL_WORDS * sizeof(__u32)); 
+memset(nonblocking_pool_data, 0, OUTPUT_POOL_WORDS * sizeof(__u32)); 
 	return 0;
 }
 module_init(rand_initialize);
@@ -1001,7 +1166,11 @@ void rand_initialize_disk(struct gendisk *disk)
 static ssize_t
 random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
+        int pool_sig;
 	ssize_t n, retval = 0, count = 0;
+	/*pool_sig = get_pool_signature(&nonblocking_pool);	
+	//printk("rand_read_num %d random_read(%d): urandom sig - %d\n", ++rand_read_count, nbytes, pool_sig);
+	DEBUG_ENT("rand_read_num %d random_read(%d): sig %08x  %08x %08x pid=%u\n", ++rand_read_count, nbytes, pool_sig,  nonblocking_pool_data[0], nonblocking_pool_data[1], current->pid); // ewust */
 
 	if (nbytes == 0)
 		return 0;
@@ -1057,7 +1226,11 @@ random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 static ssize_t
 urandom_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
 {
-	return extract_entropy_user(&nonblocking_pool, buf, nbytes);
+  int pool_sig;
+  pool_sig = get_pool_signature(&nonblocking_pool);
+  //printk("rand_read_num %d urandom_read(%d): urandom sig - %d\n", ++rand_read_count, nbytes, pool_sig);
+  DEBUG_ENT("rand_read_num %d urandom_read(%d): sig %08x %08x %08x pid=%u comm=%s\n", ++rand_read_count, nbytes, pool_sig, nonblocking_pool_data[0], nonblocking_pool_data[1], current->pid, current->comm); // ewust
+  return extract_entropy_user(&nonblocking_pool, buf, nbytes);
 }
 
 static unsigned int
@@ -1082,6 +1255,8 @@ write_pool(struct entropy_store *r, const char __user *buffer, size_t count)
 	__u32 buf[16];
 	const char __user *p = buffer;
 
+DEBUG_ENT("write_pool(.., %d)", count); // jhalderm
+
 	while (count > 0) {
 		bytes = min(count, sizeof(buf));
 		if (copy_from_user(&buf, p, bytes))
@@ -1089,6 +1264,19 @@ write_pool(struct entropy_store *r, const char __user *buffer, size_t count)
 
 		count -= bytes;
 		p += bytes;
+
+
+		/* dacashman change */
+		unsigned long flags;
+		spin_lock_irqsave(&nb_lock, flags);
+		if (r == &nonblocking_pool){
+		  /*dacashman change */
+		  int pool_sig, data_sig;
+		  pool_sig = get_pool_signature(&nonblocking_pool);
+		  data_sig = get_buf_signature(buf, bytes);
+		  DEBUG_ENT("urand_change_num %d write_pool: pool_sig %08x, data_sig %08x, bytes_mixed %d %08x %08x", ++urand_change_count, pool_sig, data_sig, bytes, nonblocking_pool_data[0], nonblocking_pool_data[1]); //ewust 
+		}
+		spin_unlock_irqrestore(&nb_lock, flags);
 
 		mix_pool_bytes(r, buf, bytes);
 		cond_resched();
@@ -1101,6 +1289,7 @@ static ssize_t random_write(struct file *file, const char __user *buffer,
 			    size_t count, loff_t *ppos)
 {
 	size_t ret;
+	DEBUG_ENT("random_write(.., %d)", count);
 
 	ret = write_pool(&blocking_pool, buffer, count);
 	if (ret)
@@ -1335,6 +1524,58 @@ ctl_table random_table[] = {
 		.proc_handler	= &proc_do_uuid,
 		.strategy	= &uuid_strategy,
 	},
+// jhalderm: //////////////////////////////////////////
+	{
+		.ctl_name	= RANDOM_UUID+1,
+		.procname	= "now_input",
+		.maxlen		= sizeof(ktime_t),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &input_pool.init_now,
+	},
+	{
+		.ctl_name	= RANDOM_UUID+2,
+		.procname	= "now_blocking",
+		.maxlen		= sizeof(ktime_t),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &blocking_pool.init_now,
+	},
+	{
+		.ctl_name	= RANDOM_UUID+3,
+		.procname	= "now_nonblocking",
+		.maxlen		= sizeof(ktime_t),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &nonblocking_pool.init_now,
+	},
+	{
+		.ctl_name	= RANDOM_UUID+4,
+		.procname	= "nb_input_bytes",
+		.maxlen		= sizeof(nb_input_bytes),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &nb_input_bytes,
+	},
+	{
+		.ctl_name	= RANDOM_UUID+5,
+		.procname	= "nb_stir_count",
+		.maxlen		= sizeof(nb_stir_count),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &nb_stir_count,
+	},
+	{
+		.ctl_name	= RANDOM_UUID+6,
+		.procname	= "nb_reentry_count",
+		.maxlen		= sizeof(nb_reentry_count),
+		.mode		= 0444,
+		.proc_handler	= &proc_dointvec,
+		.data		= &nb_reentry_count,
+	},
+
+// //////////////////////////////////////////////////
+
 	{ .ctl_name = 0 }
 };
 #endif 	/* CONFIG_SYSCTL */
