@@ -186,6 +186,9 @@ static int __init random32_reseed(void)
 		__random32(state);
 		/* dacashman change */
 	printk(KERN_DEBUG "RANDOM - random32_reseed called.  Value: %x\t%x\t%x\n", state->s1, state->s2, state->s3);
+	/* see what causes the reseed */
+	dump_stack();
+
 	state_change_num = 0;
 
 	}
