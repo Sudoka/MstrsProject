@@ -176,7 +176,13 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
 		remaining = (high - low) + 1;
 
 		rand = net_random();
+		/* dacashman change */
+		printk(KERN_DEBUG "UDP rand value before processing %x\n",
+		       rand);
 		first = (((u64)rand * remaining) >> 32) + low;
+
+		/* dacashman change */
+		printk(KERN_DEBUG "UDP first value %x before processing\n", first);
 		/*
 		 * force rand to be an odd multiple of UDP_HTABLE_SIZE
 		 */
@@ -216,6 +222,10 @@ found:
 		sk_nulls_add_node_rcu(sk, &hslot->head);
 		sock_prot_inuse_add(sock_net(sk), sk->sk_prot, 1);
 	}
+
+	/* dacashman change */
+	printk(KERN_DEBUG "UDP snum after finding: %x\n", snum);
+
 	error = 0;
 fail_unlock:
 	spin_unlock_bh(&hslot->lock);
@@ -531,6 +541,10 @@ static int udp_push_pending_frames(struct sock *sk)
 	/*
 	 * Create a UDP header
 	 */
+	/* dacashman - dump_stack to find where the header value comes from */
+	printk(KERN_DEBUG "DNS - dumping stack at UDP header creation. \n");
+	dump_stack();
+
 	uh = udp_hdr(skb);
 	uh->source = fl->fl_ip_sport;
 	uh->dest = fl->fl_ip_dport;

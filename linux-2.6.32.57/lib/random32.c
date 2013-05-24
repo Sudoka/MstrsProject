@@ -39,6 +39,10 @@
 #include <linux/jiffies.h>
 #include <linux/random.h>
 
+/* dacashman change - keep track of the number of calls */
+static int state_change_num = 0;
+
+
 struct rnd_state {
 	u32 s1, s2, s3;
 };
@@ -53,6 +57,9 @@ static u32 __random32(struct rnd_state *state)
 	state->s2 = TAUSWORTHE(state->s2, 2, 25, 4294967288UL, 4);
 	state->s3 = TAUSWORTHE(state->s3, 3, 11, 4294967280UL, 17);
 
+	/* dacashman change */
+	printk(KERN_DEBUG "RANDOM - __random32 called. Change num %d.  Value: %x\t%x\t%x\n", ++state_change_num, state->s1, state->s2, state->s3);
+
 	return (state->s1 ^ state->s2 ^ state->s3);
 }
 
@@ -61,10 +68,13 @@ static u32 __random32(struct rnd_state *state)
  */
 static inline u32 __seed(u32 x, u32 m)
 {
+        /* dacashman change */
+	printk(KERN_DEBUG "RANDOM - __seed init called.\n");
+
 	return (x < m) ? x + m : x;
 }
 
-/**
+/*
  *	random32 - pseudo random number generator
  *
  *	A 32 bit pseudo-random number is generated using a fast
@@ -77,6 +87,10 @@ u32 random32(void)
 	struct rnd_state *state = &get_cpu_var(net_rand_state);
 	r = __random32(state);
 	put_cpu_var(state);
+
+	/* dacashman change */
+	printk(KERN_DEBUG "RANDOM - random32 called.  Value: %x\t%x\t%x\n", state->s1, state->s2, state->s3);
+
 	return r;
 }
 EXPORT_SYMBOL(random32);
@@ -89,6 +103,11 @@ EXPORT_SYMBOL(random32);
  */
 void srandom32(u32 entropy)
 {
+
+  /* dacashman change */
+  struct rnd_state *state_cpy;
+
+
 	int i;
 	/*
 	 * No locking on the CPUs, but then somewhat random results are, well,
@@ -97,7 +116,12 @@ void srandom32(u32 entropy)
 	for_each_possible_cpu (i) {
 		struct rnd_state *state = &per_cpu(net_rand_state, i);
 		state->s1 = __seed(state->s1 ^ entropy, 1);
+		state_cpy = state;
 	}
+
+	/* dacashman change */
+	printk(KERN_DEBUG "RANDOM - srandom32 called with seed %d. Change num %d Value: %x\t%x\t%x\n", entropy,++state_change_num, state_cpy->s1, state_cpy->s2, state_cpy->s3);
+	dump_stack();
 }
 EXPORT_SYMBOL(srandom32);
 
@@ -107,8 +131,13 @@ EXPORT_SYMBOL(srandom32);
  */
 static int __init random32_init(void)
 {
-	int i;
 
+  /* dacashman change */
+  struct rnd_state *state_cpy;
+
+
+	int i;
+	
 	for_each_possible_cpu(i) {
 		struct rnd_state *state = &per_cpu(net_rand_state,i);
 
@@ -124,7 +153,14 @@ static int __init random32_init(void)
 		__random32(state);
 		__random32(state);
 		__random32(state);
+
+
+		/* dacashman change */
+		state_cpy = state;
 	}
+
+	/* dacashman change */
+	printk(KERN_DEBUG "RANDOM - random32 init called.  Value: %x\t%x\t%x\n", state_cpy->s1, state_cpy->s2, state_cpy->s3);
 	return 0;
 }
 core_initcall(random32_init);
@@ -148,6 +184,13 @@ static int __init random32_reseed(void)
 
 		/* mix it in */
 		__random32(state);
+		/* dacashman change */
+	printk(KERN_DEBUG "RANDOM - random32_reseed called.  Value: %x\t%x\t%x\n", state->s1, state->s2, state->s3);
+	/* see what causes the reseed */
+	dump_stack();
+
+	state_change_num = 0;
+
 	}
 	return 0;
 }
