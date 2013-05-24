@@ -1,0 +1,19 @@
+#!/bin/bash
+
+working_dir="/home/dcashman/WRITE_UP/MstrsProject/DNS/experiments/normal_udp"
+boots_left=`cat ${working_dir}/boots_left`
+
+#get num boots left from file                                                                                    
+if [ $boots_left -gt 0 ]; then
+
+
+        num=$((1000 - $boots_left))
+        #record dmesg
+	dmesg > ${working_dir}/dmesg/dmesg_${num}.txt
+
+        #decrement boots left
+	echo $(($boots_left - 1)) > ${working_dir}/boots_left
+        boots_left=`cat ${working_dir}/boots_left`
+
+fi
+exit 0
