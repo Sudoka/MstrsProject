@@ -254,6 +254,10 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
 
 #ifdef CONFIG_CC_STACKPROTECTOR
 	tsk->stack_canary = get_random_int();
+
+	/* dacashman change - make sure canary is same here as above */
+	printk(KERN_DEBUG "CANARY value: %x\n", tsk->stack_canary);
+	
 #endif
 
 	/* One for us, one for whoever does the "release_task()" (usually parent) */
@@ -1174,6 +1178,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 
 	p->pid = pid_nr(pid);
 	p->tgid = p->pid;
+
+        /* dacashman print out stack_canary and pid */
+        printk(KERN_DEBUG "CANARY value: %x for PID: %d\n",
+               p->stack_canary, p->pid);
+
+
 	if (clone_flags & CLONE_THREAD)
 		p->tgid = current->tgid;
 
