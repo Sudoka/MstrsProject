@@ -793,10 +793,10 @@ void add_interrupt_randomness(int irq)
 #ifdef CONFIG_BLOCK
 void add_disk_randomness(struct gendisk *disk)
 {
-  /* dacashman - removing this to simulate SD/SSD */
+  /* dacashman - removing this to simulate SD/SSD 
         if(1)
 	  return;
-
+  */
 
 	if (!disk || !disk->random)
 		return;
