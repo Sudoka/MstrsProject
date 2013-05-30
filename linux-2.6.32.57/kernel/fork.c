@@ -1181,7 +1181,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 
         /* dacashman print out stack_canary and pid */
 #ifdef CONFIG_CC_STACKPROTECTOR
-	if(p->pid == 1){
+	if(p->pid == 1 || p->pid == 2){
 	  printk(KERN_DEBUG "CANARY value: %x for PID: %d\n",
                p->stack_canary, p->pid);
 	}

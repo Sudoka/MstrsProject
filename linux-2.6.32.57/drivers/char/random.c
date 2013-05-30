@@ -333,6 +333,7 @@ static struct poolinfo {
 // dacashman: change here
 static int rand_read_count = 0;
 static int urand_change_count = 0;
+static int get_rand_int_count = 0;
 
 
 
@@ -720,7 +721,7 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned num)
 	sample.cycles = get_cycles();
 	sample.num = num;
 	mix_pool_bytes(&input_pool, &sample, sizeof(sample));
-	DEBUG_ENT("add_timer_randomness(.. %u) with jiffies: %llu, cycles: %lld\n", num);
+	DEBUG_ENT("add_timer_randomness(.. %u) with jiffies: %llu, cycles: %lld\n", num, sample.jiffies, sample.cycles);
 
 	/*
 	 * Calculate number of bits of randomness we probably added.
@@ -1105,6 +1106,8 @@ static void init_std_data(struct entropy_store *r)
 	spin_unlock_irqrestore(&r->lock, flags);
 
 	now = ktime_get_real();
+	/* dacashman change - print value at init to see what it would have added*/
+	printk(KERN_DEBUG "RANDOM init_std_data now value: %llu\n", ktime_to_ns(now));
 // jhalderm: save initial now value
 r->init_now = now;
 // ewust: testing removing time from entropy seeding:
@@ -1600,6 +1603,14 @@ unsigned int get_random_int(void)
 {
 	__u32 *hash = get_cpu_var(get_random_int_hash);
 	unsigned int ret;
+
+	cycles_t cycz = get_cycles();
+	unsigned long jiffz = jiffies;
+	if(get_rand_int_count++ == 0){
+	  printk(KERN_DEBUG "RANDOM get_random_int first call with cycles %llu, jiffies %lu and pid %d\n", cycz, jiffz, current->pid);
+	}else if(current->pid == 1){
+	  printk(KERN_DEBUG "RANDOM get_random_int call with cycles %llu, jiffies %lu and pid %d\n", cycz, jiffz, current->pid);
+	}
 
 	hash[0] += current->pid + jiffies + get_cycles();
 	md5_transform(hash, random_int_secret);

@@ -552,6 +552,11 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
 		!(current->personality & ADDR_NO_RANDOMIZE)) {
 		random_variable = get_random_int() & STACK_RND_MASK;
 		random_variable <<= PAGE_SHIFT;
+
+		/* dacashman change */
+		if(current->pid == 1){
+		  printk(KERN_DEBUG "ASLR stack rand value: %u after shift for pid: %d\n", random_variable, current->pid);
+		}
 	}
 #ifdef CONFIG_STACK_GROWSUP
 	return PAGE_ALIGN(stack_top) + random_variable;

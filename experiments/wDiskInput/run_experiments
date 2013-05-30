@@ -8,6 +8,16 @@ if [ $boots_left -gt 0 ]; then
 
 
         num=$((1000 - $boots_left))
+	#read from urandom
+	dd if=/dev/urandom of=${working_dir}/urandom_read/urandom_4.out.${num} count=4 bs=1
+	dd if=/dev/urandom of=${working_dir}/urandom_read/urandom_128.out.${num} count=128 bs=1
+
+	#generate UDP src ports
+	host www.google.com
+	host www.facebook.com
+	host www.ucsd.edu
+	host www.example.com
+
         #record dmesg
 	dmesg > ${working_dir}/dmesg/dmesg_${num}.txt
 

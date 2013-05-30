@@ -7,7 +7,7 @@ boots_left=`cat ${working_dir}/boots_left`
 if [ $boots_left -gt 0 ]; then
 
 
-        num=$((1000 - $boots_left))
+        num=$((500 - $boots_left))
         #record dmesg
 	dmesg > ${working_dir}/dmesg/dmesg_${num}.txt
 

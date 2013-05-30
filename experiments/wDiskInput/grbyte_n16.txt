@@ -1,0 +1,58 @@
+[    0.000000] random 0000 0000 0000 00000000 00000000: rand_read_num 1 get_random_bytes(8): sig 00000000 00000000 00000000
+[    0.052842] random 0000 0000 0000 00000000 00000000: rand_read_num 2 get_random_bytes(8): sig fffffe1a 00000000 00000000
+[    0.307456] random 0000 0000 0000 5f8db4e5 4cfdf2a8: rand_read_num 3 get_random_bytes(4): sig fffffb64 5f8db4e5 4cfdf2a8
+[    4.937799] random 0014 0000 0000 00000000 00000000: rand_read_num 4 get_random_bytes(136): sig 00000000 00000000 00000000
+[    4.938285] random 0014 0000 0000 9ff19f9c c07a1d2a: rand_read_num 5 get_random_bytes(8): sig 0000031b 9ff19f9c c07a1d2a
+[    5.564952] random 0025 0000 0000 277f73c3 42024bb9: rand_read_num 6 get_random_bytes(12): sig 000007e9 277f73c3 42024bb9
+[    5.566184] random 0025 0000 0000 386b4e60 ee4d4880: rand_read_num 7 get_random_bytes(64): sig fffffea5 386b4e60 ee4d4880
+[    5.566272] random 0025 0000 0000 61fc8914 d5882ed2: rand_read_num 8 get_random_bytes(64): sig fffff9ee 61fc8914 d5882ed2
+[    5.566387] random 0025 0000 0000 e7f555d9 e8ce5c3c: rand_read_num 9 get_random_bytes(4): sig 0000068c e7f555d9 e8ce5c3c
+[    5.583197] random 0029 0000 0000 e7f555d9 e8ce5c3c: rand_read_num 10 get_random_bytes(4): sig ffffff72 e7f555d9 e8ce5c3c
+[   23.900877] random 0156 0000 0000 1d73d0ce 5a016995: rand_read_num 305 urandom_read(4096): sig 0000004a 1d73d0ce 5a016995 pid=3045 comm=dd
+[   30.122537] random 0132 0000 0000 06a48d99 297275ab: rand_read_num 341 get_random_bytes(1): sig 0000025a 06a48d99 297275ab
+[   30.122602] random 0132 0000 0000 fcbd1d76 4c0e9470: rand_read_num 342 get_random_bytes(1): sig 000000b5 fcbd1d76 4c0e9470
+[   30.122679] random 0132 0000 0000 5bd790b3 3bbac44f: rand_read_num 343 get_random_bytes(1): sig ffffff12 5bd790b3 3bbac44f
+[   30.122923] random 0132 0000 0000 5bd790b3 3bbac44f: rand_read_num 344 get_random_bytes(1): sig fffffdc0 5bd790b3 3bbac44f
+[   30.122986] random 0132 0000 0000 58607ebe 8dfd25b7: rand_read_num 345 get_random_bytes(1): sig fffffe3c 58607ebe 8dfd25b7
+[   30.123049] random 0132 0000 0000 58607ebe 8dfd25b7: rand_read_num 346 get_random_bytes(1): sig ffffff0c 58607ebe 8dfd25b7
+[   30.123109] random 0132 0000 0000 5e0cdf66 4f027c7c: rand_read_num 347 get_random_bytes(1): sig ffffff23 5e0cdf66 4f027c7c
+[   30.136918] random 0134 0000 0000 d38ecc50 aab556f7: rand_read_num 350 get_random_bytes(1): sig fffffedf d38ecc50 aab556f7
+[   30.253121] random 0151 0000 0000 f794eb78 9792fbce: rand_read_num 363 get_random_bytes(1): sig 00000092 f794eb78 9792fbce
+[   30.253184] random 0151 0000 0000 f794eb78 9792fbce: rand_read_num 364 get_random_bytes(1): sig fffffd61 f794eb78 9792fbce
+[   30.442988] random 0151 0000 0000 48b5d355 5fedfd62: rand_read_num 365 get_random_bytes(1): sig ffffff3b 48b5d355 5fedfd62
+[   30.443340] random 0151 0000 0000 79bb3579 db9eecff: rand_read_num 366 get_random_bytes(1): sig 000000fa 79bb3579 db9eecff
+[   30.443436] random 0151 0000 0000 79bb3579 db9eecff: rand_read_num 367 get_random_bytes(1): sig 000004c3 79bb3579 db9eecff
+[   30.443528] random 0151 0000 0000 ab6d1b89 7ec1c5ce: rand_read_num 368 get_random_bytes(1): sig 0000012f ab6d1b89 7ec1c5ce
+[   30.443621] random 0151 0000 0000 879227ce 89a714c8: rand_read_num 369 get_random_bytes(1): sig fffff8c2 879227ce 89a714c8
+[   30.444923] random 0151 0000 0000 879227ce 89a714c8: rand_read_num 370 get_random_bytes(1): sig fffffafd 879227ce 89a714c8
+[   30.445015] random 0151 0000 0000 489887b8 9bda661a: rand_read_num 371 get_random_bytes(1): sig fffffe4f 489887b8 9bda661a
+[   30.445470] random 0151 0000 0000 489887b8 9bda661a: rand_read_num 372 get_random_bytes(1): sig fffffd12 489887b8 9bda661a
+[   30.445564] random 0151 0000 0000 ff09ae67 ccd1c330: rand_read_num 373 get_random_bytes(1): sig fffffee8 ff09ae67 ccd1c330
+[   30.445655] random 0151 0000 0000 cd580cea f1d2b43e: rand_read_num 374 get_random_bytes(1): sig 00000324 cd580cea f1d2b43e
+[   30.445761] random 0151 0000 0000 cd580cea f1d2b43e: rand_read_num 375 get_random_bytes(1): sig 00000593 cd580cea f1d2b43e
+[   30.445853] random 0151 0000 0000 12a4f9a8 81413906: rand_read_num 376 get_random_bytes(1): sig 00000132 12a4f9a8 81413906
+[   30.445943] random 0151 0000 0000 77d08a81 95a3b58b: rand_read_num 377 get_random_bytes(1): sig fffffcde 77d08a81 95a3b58b
+[   30.446087] random 0151 0000 0000 77d08a81 95a3b58b: rand_read_num 378 get_random_bytes(1): sig 00000048 77d08a81 95a3b58b
+[   30.446177] random 0151 0000 0000 aaca7a9f f0b203e9: rand_read_num 379 get_random_bytes(1): sig fffffee0 aaca7a9f f0b203e9
+[   30.446620] random 0151 0000 0000 aaca7a9f f0b203e9: rand_read_num 380 get_random_bytes(1): sig fffffb2a aaca7a9f f0b203e9
+[   30.446726] random 0151 0000 0000 4b268b6f e772c057: rand_read_num 381 get_random_bytes(1): sig 00000029 4b268b6f e772c057
+[   30.446818] random 0151 0000 0000 317c54c6 eb362dec: rand_read_num 382 get_random_bytes(1): sig ffffff68 317c54c6 eb362dec
+[   30.446910] random 0151 0000 0000 317c54c6 eb362dec: rand_read_num 383 get_random_bytes(1): sig 000000cb 317c54c6 eb362dec
+[   30.447001] random 0151 0000 0000 b04cb6ff da068fbc: rand_read_num 384 get_random_bytes(1): sig ffffff96 b04cb6ff da068fbc
+[   30.972003] random 0167 0000 0000 96f78b07 4db3b16c: rand_read_num 430 get_random_bytes(1): sig 0000038a 96f78b07 4db3b16c
+[   31.054489] random 0187 0000 0000 b7c9cb45 45017143: rand_read_num 443 get_random_bytes(4): sig 000000bc b7c9cb45 45017143
+[   31.054605] random 0187 0000 0000 954c21ce 15a12899: rand_read_num 444 get_random_bytes(4): sig fffffe40 954c21ce 15a12899
+[   31.057181] random 0187 0000 0000 cddc54d5 65043407: rand_read_num 445 get_random_bytes(4): sig fffffeef cddc54d5 65043407
+[   31.206931] random 0152 0000 0000 bf3b7f73 0bb782b9: rand_read_num 447 urandom_read(32): sig 00000127 bf3b7f73 0bb782b9 pid=3193 comm=sshd
+[   31.300951] random 0154 0000 0000 18dadf2b 16df342e: rand_read_num 449 get_random_bytes(4): sig 0000013d 18dadf2b 16df342e
+[   31.301236] random 0154 0000 0000 18dadf2b 16df342e: rand_read_num 450 get_random_bytes(8): sig ffffff66 18dadf2b 16df342e
+[   31.355151] random 0167 0000 0000 08566ede 7096b554: rand_read_num 451 get_random_bytes(4): sig 000002f5 08566ede 7096b554
+[   31.355571] random 0167 0000 0000 08566ede 7096b554: rand_read_num 452 get_random_bytes(4): sig 000001b4 08566ede 7096b554
+[   32.910257] random 0144 0000 0000 cff1a148 b2124f70: rand_read_num 469 urandom_read(12): sig 00000395 cff1a148 b2124f70 pid=3218 comm=dbus-daemon
+[   32.957436] random 0152 0000 0000 6b3ef187 5721b99d: rand_read_num 470 urandom_read(12): sig fffffd89 6b3ef187 5721b99d pid=3218 comm=dbus-daemon
+[   33.103912] random 0178 0000 0000 70435dc7 e2aefaa8: rand_read_num 475 urandom_read(10): sig 00000193 70435dc7 e2aefaa8 pid=3224 comm=hald
+[   33.104096] random 0178 0000 0000 70435dc7 e2aefaa8: rand_read_num 476 urandom_read(12): sig ffffff07 70435dc7 e2aefaa8 pid=3224 comm=hald
+[   33.107276] random 0178 0000 0000 4d77515b 0d9aa2e4: rand_read_num 477 urandom_read(10): sig fffffd34 4d77515b 0d9aa2e4 pid=3224 comm=hald
+[   33.107412] random 0178 0000 0000 4d77515b 0d9aa2e4: rand_read_num 478 urandom_read(12): sig fffffecb 4d77515b 0d9aa2e4 pid=3224 comm=hald
+[   33.456313] random 0151 0000 0000 cacec4a7 fb6032bf: rand_read_num 498 get_random_bytes(1): sig 0000016e cacec4a7 fb6032bf
+[   34.235729] random 0156 0000 0000 8da20eab 1ed05191: rand_read_num 505 get_random_bytes(4): sig fffff9a7 8da20eab 1ed05191
