@@ -7,7 +7,7 @@ boots_left=`cat ${working_dir}/boots_left`
 if [ $boots_left -gt 0 ]; then
 
 
-        num=$((1000 - $boots_left))
+        num=$((500 - $boots_left))
 	#read from urandom
 	dd if=/dev/urandom of=${working_dir}/urandom_read/urandom_4.out.${num} count=4 bs=1
 	dd if=/dev/urandom of=${working_dir}/urandom_read/urandom_128.out.${num} count=128 bs=1

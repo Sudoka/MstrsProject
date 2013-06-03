@@ -1107,7 +1107,7 @@ static void init_std_data(struct entropy_store *r)
 
 	now = ktime_get_real();
 	/* dacashman change - print value at init to see what it would have added*/
-	printk(KERN_DEBUG "RANDOM init_std_data now value: %llu\n", ktime_to_ns(now));
+	printk(KERN_DEBUG "RANDOM init_std_data for %s now value: %llu\n", r->name, ktime_to_ns(now));
 // jhalderm: save initial now value
 r->init_now = now;
 // ewust: testing removing time from entropy seeding:
