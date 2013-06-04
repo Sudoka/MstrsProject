@@ -1,0 +1,45 @@
+b7471000-b747c000 r-xp 00000000 08:01 132051     /lib/i386-linux-gnu/libnss_files-2.15.so
+b747c000-b747d000 r--p 0000a000 08:01 132051     /lib/i386-linux-gnu/libnss_files-2.15.so
+b747d000-b747e000 rw-p 0000b000 08:01 132051     /lib/i386-linux-gnu/libnss_files-2.15.so
+b747e000-b7488000 r-xp 00000000 08:01 132055     /lib/i386-linux-gnu/libnss_nis-2.15.so
+b7488000-b7489000 r--p 00009000 08:01 132055     /lib/i386-linux-gnu/libnss_nis-2.15.so
+b7489000-b748a000 rw-p 0000a000 08:01 132055     /lib/i386-linux-gnu/libnss_nis-2.15.so
+b748a000-b74a0000 r-xp 00000000 08:01 132045     /lib/i386-linux-gnu/libnsl-2.15.so
+b74a0000-b74a1000 r--p 00015000 08:01 132045     /lib/i386-linux-gnu/libnsl-2.15.so
+b74a1000-b74a2000 rw-p 00016000 08:01 132045     /lib/i386-linux-gnu/libnsl-2.15.so
+b74a2000-b74a4000 rw-p 00000000 00:00 0 
+b74a4000-b74ab000 r-xp 00000000 08:01 132047     /lib/i386-linux-gnu/libnss_compat-2.15.so
+b74ab000-b74ac000 r--p 00006000 08:01 132047     /lib/i386-linux-gnu/libnss_compat-2.15.so
+b74ac000-b74ad000 rw-p 00007000 08:01 132047     /lib/i386-linux-gnu/libnss_compat-2.15.so
+b74ad000-b74af000 rw-p 00000000 00:00 0 
+b74af000-b764e000 r-xp 00000000 08:01 132000     /lib/i386-linux-gnu/libc-2.15.so
+b764e000-b7650000 r--p 0019f000 08:01 132000     /lib/i386-linux-gnu/libc-2.15.so
+b7650000-b7651000 rw-p 001a1000 08:01 132000     /lib/i386-linux-gnu/libc-2.15.so
+b7651000-b7654000 rw-p 00000000 00:00 0 
+b7654000-b765b000 r-xp 00000000 08:01 132086     /lib/i386-linux-gnu/librt-2.15.so
+b765b000-b765c000 r--p 00006000 08:01 132086     /lib/i386-linux-gnu/librt-2.15.so
+b765c000-b765d000 rw-p 00007000 08:01 132086     /lib/i386-linux-gnu/librt-2.15.so
+b765d000-b7674000 r-xp 00000000 08:01 132080     /lib/i386-linux-gnu/libpthread-2.15.so
+b7674000-b7675000 r--p 00016000 08:01 132080     /lib/i386-linux-gnu/libpthread-2.15.so
+b7675000-b7676000 rw-p 00017000 08:01 132080     /lib/i386-linux-gnu/libpthread-2.15.so
+b7676000-b7678000 rw-p 00000000 00:00 0 
+b7678000-b76bf000 r-xp 00000000 08:01 132012     /lib/i386-linux-gnu/libdbus-1.so.3.5.8
+b76bf000-b76c0000 r--p 00046000 08:01 132012     /lib/i386-linux-gnu/libdbus-1.so.3.5.8
+b76c0000-b76c1000 rw-p 00047000 08:01 132012     /lib/i386-linux-gnu/libdbus-1.so.3.5.8
+b76c1000-b76c2000 rw-p 00000000 00:00 0 
+b76c2000-b76ca000 r-xp 00000000 08:01 132042     /lib/i386-linux-gnu/libnih-dbus.so.1.0.0
+b76ca000-b76cb000 r--p 00007000 08:01 132042     /lib/i386-linux-gnu/libnih-dbus.so.1.0.0
+b76cb000-b76cc000 rw-p 00008000 08:01 132042     /lib/i386-linux-gnu/libnih-dbus.so.1.0.0
+b76cc000-b76e3000 r-xp 00000000 08:01 132044     /lib/i386-linux-gnu/libnih.so.1.0.0
+b76e3000-b76e4000 r--p 00016000 08:01 132044     /lib/i386-linux-gnu/libnih.so.1.0.0
+b76e4000-b76e5000 rw-p 00017000 08:01 132044     /lib/i386-linux-gnu/libnih.so.1.0.0
+b76f5000-b76f7000 rw-p 00000000 00:00 0 
+b76f7000-b76f8000 r-xp 00000000 00:00 0          [vdso]
+b76f8000-b7718000 r-xp 00000000 08:01 131980     /lib/i386-linux-gnu/ld-2.15.so
+b7718000-b7719000 r--p 0001f000 08:01 131980     /lib/i386-linux-gnu/ld-2.15.so
+b7719000-b771a000 rw-p 00020000 08:01 131980     /lib/i386-linux-gnu/ld-2.15.so
+b771a000-b7748000 r-xp 00000000 08:01 917659     /sbin/init
+b7748000-b7749000 r--p 0002d000 08:01 917659     /sbin/init
+b7749000-b774a000 rw-p 0002e000 08:01 917659     /sbin/init
+b82c1000-b8343000 rw-p 00000000 00:00 0          [heap]
+bfdb0000-bfdc5000 rw-p 00000000 00:00 0          [stack]
